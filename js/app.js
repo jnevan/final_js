@@ -5,14 +5,19 @@ var Calculadora ={
 	init: function(){
 		this.botonClick()
 		this.cargarEstilos()
-		//this.Calcular()
-	
+		this.pantalla = document.getElementById('display')
+		//this.punto = false;
 	},
 	 botonClick: function(){
-		//var caja1 = document.getElementsByClassName('pantalla')
+		//var pantalla1 = document.getElementsByClassName('pantalla')
 		var buttons = document.querySelectorAll('.tecla');
 		var self = this;
-		var caja = document.getElementById('display')
+		var punto = false;
+		var por = false;
+		var dividido = false;
+		var mas = false;
+		var menos = false;
+		//var pantalla = document.getElementById('display')
 		// a cada uno le asignamos el manejador del evento.
 		for(var i = 0; i < buttons.length; i++) {
 			buttons[i].addEventListener("click", function() {
@@ -20,32 +25,64 @@ var Calculadora ={
 					//self.cambiarEstilo(this);
 					var digito = this.id
 					switch(digito){
-						case "por":{digito="*";
+						case "por":{if(!por){
+										self.addDigito("*")
+										por=true
+										}
+									punto=false
+									break;
+								}
+						case "mas":{self.addDigito("+");punto=false
 							break;}
-						case "mas":{digito="+";
+						case "menos":{self.addDigito("-");punto=false
 							break;}
-						case "menos":{digito="-";
+						case "dividido":{self.addDigito("/");punto=false
 							break;}
-						case "dividido":{digito="/";
+						case "punto":{if(!punto){self.addDigito(".");punto=true}
 							break;}
-						case "punto":{digito=".";
+						case "on":{	self.borrarPantalla();
+									self.addDigito(0)
+									punto=false
 							break;}
-						case "on":{caja.innerHTML=null;
-									digito="0";
+						case "sign":{self.cambiarSigno(self.pantalla.innerHTML);
 							break;}
-						case "sign":{caja.innerHTML="-"+caja.innerHTML;
-									digito="";
+						case "raiz":{
 							break;}
+						case "igual":{self.Calcular()
+							break;}
+						default: {self.addDigito(digito)
+									por = false
+									suma = false
+									menos = false
+									dividido = false
+						}
 					}
-					if(caja.innerHTML==0)
-						caja.innerHTML=null
-
-					if (digito == "igual")
-						caja.innerHTML = self.Calcular(caja.innerHTML)
-					else  caja.innerHTML += digito
 				});    
 
 		}
+
+	},
+	addDigito: function(digito){
+		var valor = parseFloat(this.pantalla.innerHTML)
+
+		//if((valor==0)&&(digito=="menos")&&(digito=="mas")&&(digito=="por"))
+		if((valor!=0)||(isNaN(digito)))
+			 this.pantalla.innerHTML += digito
+		else
+			this.pantalla.innerHTML = digito
+	},	
+	cambiarSigno: function(numero){
+		this.borrarPantalla()
+		this.addDigito(parseFloat(numero)*(-1))
+	},	
+	borrarPantalla: function(){
+		this.pantalla.innerHTML=null
+		//this.punto = false
+	},
+	Calcular: function(){
+		
+		this.pantalla.innerHTML=eval(this.pantalla.innerHTML)
+		//this.punto = false
 	},
 	cargarEstilos: function(){	
 		var buttons = document.querySelectorAll('.tecla');
@@ -67,8 +104,6 @@ var Calculadora ={
 	},
 	
 		
-	Calcular: function(cadena){
-		return eval(cadena)
-	}
+
 }
 
