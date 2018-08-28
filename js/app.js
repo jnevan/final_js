@@ -6,18 +6,17 @@ var Calculadora ={
 		this.botonClick()
 		this.cargarEstilos()
 		this.pantalla = document.getElementById('display')
-		//this.punto = false;
+		this.acumulador = 0;
+		this.ultimoValor = null;
+		this.ultimoOperador = null;
+		this.secuenciaActivo = false;
 	},
 	 botonClick: function(){
 		//var pantalla1 = document.getElementsByClassName('pantalla')
 		var buttons = document.querySelectorAll('.tecla');
 		var self = this;
-		var punto = false;
-		var por = false;
-		var dividido = false;
-		var mas = false;
-		var menos = false;
-		//var pantalla = document.getElementById('display')
+		var punto = por = dividido = mas = menos = false;
+		
 		// a cada uno le asignamos el manejador del evento.
 		for(var i = 0; i < buttons.length; i++) {
 			buttons[i].addEventListener("click", function() {
@@ -25,36 +24,59 @@ var Calculadora ={
 					//self.cambiarEstilo(this);
 					var digito = this.id
 					switch(digito){
-						case "por":{if(!por){
+						case "por":{
+									if(!por){
 										self.addDigito("*")
 										por=true
 										}
 									punto=false
 									break;
 								}
-						case "mas":{self.addDigito("+");punto=false
-							break;}
-						case "menos":{self.addDigito("-");punto=false
-							break;}
-						case "dividido":{self.addDigito("/");punto=false
-							break;}
+						case "mas":{
+									if(!mas){
+										self.addDigito("+")
+										mas=true
+										}
+						
+									punto=false
+									break;
+							}
+						case "menos":{
+									 if(!menos){
+										self.addDigito("-")
+										menos=true
+									 }
+									punto=false
+									break
+							}
+						case "dividido":{if(!dividido){
+											self.addDigito("/")
+											dividido=true
+										}
+										punto=false
+										break
+							}
 						case "punto":{if(!punto){self.addDigito(".");punto=true}
 							break;}
 						case "on":{	self.borrarPantalla();
 									self.addDigito(0)
-									punto=false
+									punto = self.secuenciaActivo = false;
+									self.acumulador = 0;
 							break;}
-						case "sign":{self.cambiarSigno(self.pantalla.innerHTML);
-							break;}
+						case "sign":{
+									self.cambiarSigno();
+									break;
+									}
 						case "raiz":{
 							break;}
-						case "igual":{self.Calcular()
-							break;}
+						case "igual":{
+									
+									self.Calcular()
+									self.secuenciaActivo = true
+									break;
+									}
 						default: {self.addDigito(digito)
-									por = false
-									suma = false
-									menos = false
-									dividido = false
+									por = mas = menos = dividido = false
 						}
 					}
 				});    
@@ -63,27 +85,56 @@ var Calculadora ={
 
 	},
 	addDigito: function(digito){
-		var valor = parseFloat(this.pantalla.innerHTML)
 
-		//if((valor==0)&&(digito=="menos")&&(digito=="mas")&&(digito=="por"))
-		if((valor!=0)||(isNaN(digito)))
-			 this.pantalla.innerHTML += digito
-		else
-			this.pantalla.innerHTML = digito
+	// para mostrar en pantalla y acumulador
+		if(isNaN(digito)){
+			this.acumulador += digito
+			if(digito==".")
+				this.pantalla.innerHTML += digito
+			else{ 
+			    this.borrarPantalla()
+				this.ultimoOperador = digito
+			}
+		}
+		else if((this.acumulador!=0)||(this.acumulador.toString().substr(-1)==".")){
+			if (this.pantalla.innerHTML.length <=7){
+				this.pantalla.innerHTML += digito
+				this.acumulador += digito
+				}
+			}
+			 else{
+				this.pantalla.innerHTML = digito
+				this.acumulador = digito
+			 }
+		this.ultimoValor = this.pantalla.innerHTML
 	},	
-	cambiarSigno: function(numero){
+	
+	cambiarSigno: function(){
+		var numero = this.pantalla.innerHTML
+		this.acumulador = this.acumulador.substr(0,(this.acumulador.length-numero.length))
 		this.borrarPantalla()
 		this.addDigito(parseFloat(numero)*(-1))
 	},	
+	
 	borrarPantalla: function(){
 		this.pantalla.innerHTML=null
-		//this.punto = false
 	},
+
 	Calcular: function(){
+		var numero = this.pantalla.innerHTML
 		
-		this.pantalla.innerHTML=eval(this.pantalla.innerHTML)
-		//this.punto = false
+		if (this.secuenciaActivo)
+			this.acumulador = this.actualizaResultado()
+		
+		var resultado = eval(this.acumulador)
+		if(resultado.toString().length>=8)
+			this.pantalla.innerHTML=resultado.toString().substr(0,8);
+		else this.pantalla.innerHTML=resultado
 	},
+	actualizaResultado: function(){
+		return eval(this.acumulador)+this.ultimoOperador+this.ultimoValor
+		},
+	
 	cargarEstilos: function(){	
 		var buttons = document.querySelectorAll('.tecla');
 		 var css = document.createElement('style');
